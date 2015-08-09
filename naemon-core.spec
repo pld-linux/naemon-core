@@ -43,27 +43,16 @@ install this package.
 
 %build
 %configure \
-	--with-initdir="%{_initrddir}" \
-	--datadir="%{_datadir}/%{name}" \
-	--libdir="%{_libdir}/%{name}" \
-	--localstatedir="%{_localstatedir}/lib/%{name}" \
-	--enable-event-broker \
-	%{__with_without tests} \
+	--with-logrotatedir=%{_sysconfdir}/logrotate.d \
+	--with-initdir=%{_initrddir} \
 	--with-pluginsdir=%{plugindir} \
-	--with-tempdir="%{_localstatedir}/cache/%{name}" \
-	--with-checkresultdir="%{_localstatedir}/cache/%{name}/checkresults" \
-	--with-logdir="%{_localstatedir}/log/%{name}" \
-	--with-logrotatedir="%{_sysconfdir}/logrotate.d" \
-	--with-naemon-user="naemon" \
-	--with-naemon-group="naemon" \
-	--with-lockfile="%{_localstatedir}/run/%{name}/%{name}.pid" \
-	--with-thruk-user="http" \
-	--with-thruk-group="naemon" \
-	--with-thruk-libs="%{_libdir}/%{name}/perl5" \
-	--with-thruk-tempdir="%{_localstatedir}/cache/%{name}/thruk" \
-	--with-thruk-vardir="%{_localstatedir}/lib/%{name}/thruk" \
-	--with-httpd-conf="%{_sysconfdir}/httpd/conf.d" \
-	--with-htmlurl="/%{name}"
+	--localstatedir=%{_localstatedir}/lib/naemon \
+	--with-checkresultdir=%{_localstatedir}/spool/naemon/checkresults \
+	%{__with_without tests} \
+	--enable-event-broker \
+	--with-naemon-user=naemon \
+	--with-naemon-group=naemon \
+	--with-mail=/bin/mail
 
 %{__make}
 
@@ -75,7 +64,7 @@ rm -rf $RPM_BUILD_ROOT
     INIT_OPTS="" \
     DESTDIR=$RPM_BUILD_ROOT
 
-install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/%{name}
+install -d $RPM_BUILD_ROOT%{_localstatedir}/{lib/naemon,log/naemon/archives}
 
 %if %{with doc}
 ### Install documentation
@@ -98,12 +87,15 @@ install -D -p naemon.tmpfiles.conf $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%post	-p /sbin/ldconfig
+%postun	-p /sbin/ldconfig
+
 %files
 %defattr(644,root,root,755)
 %doc README.md
 %attr(754,root,root) /etc/rc.d/init.d/naemon
-%attr(755,root,root) %{_libdir}/%{name}/libnaemon.so.*.*.*
-%ghost %{_libdir}/%{name}/libnaemon.so.0
+%attr(755,root,root) %{_libdir}/libnaemon.so.*.*.*
+%ghost %{_libdir}/libnaemon.so.0
 %attr(755,root,root) %{_bindir}/naemon
 %attr(755,root,root) %{_bindir}/naemonstats
 %attr(755,root,root) %{_bindir}/oconfsplit
@@ -116,20 +108,19 @@ rm -rf $RPM_BUILD_ROOT
 %{systemdtmpfilesdir}/%{name}.conf
 %config(noreplace) /etc/logrotate.d/naemon
 %dir %{_sysconfdir}/naemon
-%attr(2775,naemon,naemon) %dir %{_sysconfdir}/naemon/conf.d
+%dir %{_sysconfdir}/naemon/conf.d
+%dir %{_sysconfdir}/naemon/conf.d/templates
 %config(noreplace) %{_sysconfdir}/naemon/naemon.cfg
 %config(noreplace) %{_sysconfdir}/naemon/resource.cfg
-%attr(664,naemon,naemon) %config(noreplace) %{_sysconfdir}/naemon/conf.d/*.cfg
-%dir %{_sysconfdir}/naemon/conf.d/templates
-%attr(664,naemon,naemon) %config(noreplace) %{_sysconfdir}/naemon/conf.d/templates/*.cfg
+%config(noreplace) %{_sysconfdir}/naemon/conf.d/*.cfg
+%config(noreplace) %{_sysconfdir}/naemon/conf.d/templates/*.cfg
 
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/%{name}
 
-%attr(2775,naemon,http) %dir %{_localstatedir}/cache/%{name}/checkresults
-%attr(2775,naemon,naemon) %dir %{_localstatedir}/cache/%{name}
-%attr(755,naemon,naemon) %dir %{_localstatedir}/lib/%{name}
-%attr(755,naemon,naemon) %dir %{_localstatedir}/log/%{name}
-%attr(755,naemon,naemon) %dir %{_localstatedir}/log/%{name}/archives
+%attr(2775,naemon,http) %dir %{_localstatedir}/spool/naemon/checkresults
+%attr(775,root,naemon) %dir %{_localstatedir}/lib/naemon
+%attr(775,root,naemon) %dir %{_localstatedir}/log/naemon
+%attr(775,root,naemon) %dir %{_localstatedir}/log/naemon/archives
 
 %if %{with doc}
 %attr(-,root,root) %{_datadir}/%{name}/documentation
@@ -138,7 +129,7 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(644,root,root,755)
 %{_includedir}/naemon
-%{_libdir}/%{name}/libnaemon.a
-%{_libdir}/%{name}/libnaemon.la
-%{_libdir}/%{name}/libnaemon.so
-%{_libdir}/%{name}/pkgconfig/naemon.pc
+%{_libdir}/libnaemon.a
+%{_libdir}/libnaemon.la
+%{_libdir}/libnaemon.so
+%{_libdir}/pkgconfig/naemon.pc
