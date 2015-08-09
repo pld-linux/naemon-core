@@ -11,22 +11,11 @@ Group:		Applications/System
 Source0:	http://labs.consol.de/naemon/release/v%{version}/src/%{name}-%{version}.tar.gz
 # Source0-md5:	5eb9c6e9be29b993e8488d58f8b3de23
 URL:		http://www.naemon.org/
-BuildRequires:	autoconf
-BuildRequires:	automake
 BuildRequires:	chrpath
-BuildRequires:	doxygen
-BuildRequires:	expat-devel
-BuildRequires:	gd
-BuildRequires:	gd-devel >= 1.8
 BuildRequires:	gperf
-BuildRequires:	libjpeg-devel
-BuildRequires:	libpng-devel
-BuildRequires:	libtool
-BuildRequires:	logrotate
-BuildRequires:	mysql-devel
-BuildRequires:	perl
+BuildRequires:	help2man
 BuildRequires:	perl-ExtUtils-MakeMaker
-BuildRequires:	rsync
+BuildRequires:	pkgconfig
 BuildRequires:	zlib-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
