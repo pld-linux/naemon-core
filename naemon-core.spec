@@ -34,9 +34,10 @@ Group:		Development/Libraries
 
 %description devel
 This package contains the header files, static libraries and
-development documentation for %{name}. If you are a NEB-module author
-or wish to write addons for Naemon using Naemons own APIs, you should
-install this package.
+development documentation for naemon-core.
+
+If you are a NEB-module author or wish to write addons for Naemon
+using Naemons own APIs, you should install this package.
 
 %prep
 %setup -q
@@ -76,7 +77,7 @@ rm $RPM_BUILD_ROOT%{_datadir}/%{name}/documentation/installdox
 
 # Put the new RC sysconfig in place
 install -d $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
-install -p sample-config/naemon.sysconfig $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/%{name}
+install -p sample-config/naemon.sysconfig $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/naemon
 
 # Install systemd entry
 install -D -p daemon-systemd $RPM_BUILD_ROOT%{systemdunitdir}/%{name}.service
@@ -93,6 +94,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc README.md
+%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/naemon
 %attr(754,root,root) /etc/rc.d/init.d/naemon
 %attr(755,root,root) %{_libdir}/libnaemon.so.*.*.*
 %ghost %{_libdir}/libnaemon.so.0
@@ -114,9 +116,6 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{_sysconfdir}/naemon/resource.cfg
 %config(noreplace) %{_sysconfdir}/naemon/conf.d/*.cfg
 %config(noreplace) %{_sysconfdir}/naemon/conf.d/templates/*.cfg
-
-%config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/%{name}
-
 %attr(2775,naemon,http) %dir %{_localstatedir}/spool/naemon/checkresults
 %attr(775,root,naemon) %dir %{_localstatedir}/lib/naemon
 %attr(775,root,naemon) %dir %{_localstatedir}/log/naemon
@@ -132,4 +131,4 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libnaemon.a
 %{_libdir}/libnaemon.la
 %{_libdir}/libnaemon.so
-%{_libdir}/pkgconfig/naemon.pc
+%{_pkgconfigdir}/naemon.pc
