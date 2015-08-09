@@ -6,7 +6,7 @@
 Summary:	Open Source Host, Service And Network Monitoring Program
 Name:		naemon-core
 Version:	1.0.3
-Release:	0.1
+Release:	0.2
 License:	GPL v2
 Group:		Applications/System
 Source0:	http://labs.consol.de/naemon/release/v%{version}/src/%{name}-%{version}.tar.gz
@@ -116,6 +116,7 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{_sysconfdir}/naemon/resource.cfg
 %config(noreplace) %{_sysconfdir}/naemon/conf.d/*.cfg
 %config(noreplace) %{_sysconfdir}/naemon/conf.d/templates/*.cfg
+%dir %{_localstatedir}/spool/naemon
 %attr(2775,naemon,http) %dir %{_localstatedir}/spool/naemon/checkresults
 %attr(775,root,naemon) %dir %{_localstatedir}/lib/naemon
 %attr(775,root,naemon) %dir %{_localstatedir}/log/naemon
