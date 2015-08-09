@@ -1,5 +1,6 @@
 #
 # Conditional build:
+%bcond_with	tests		# build with tests
 %bcond_with	doc		# build doc
 
 Summary:	Open Source Host, Service And Network Monitoring Program
@@ -18,6 +19,8 @@ BuildRequires:	perl-ExtUtils-MakeMaker
 BuildRequires:	pkgconfig
 BuildRequires:	zlib-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
+%define		plugindir		%{_prefix}/lib/nagios/plugins
 
 %description
 Naemon is an application, system and network monitoring application.
@@ -45,8 +48,8 @@ install this package.
 	--libdir="%{_libdir}/%{name}" \
 	--localstatedir="%{_localstatedir}/lib/%{name}" \
 	--enable-event-broker \
-	--without-tests \
-	--with-pluginsdir="%{_libdir}/%{name}/plugins" \
+	%{__with_without tests} \
+	--with-pluginsdir=%{plugindir} \
 	--with-tempdir="%{_localstatedir}/cache/%{name}" \
 	--with-checkresultdir="%{_localstatedir}/cache/%{name}/checkresults" \
 	--with-logdir="%{_localstatedir}/log/%{name}" \
@@ -67,10 +70,10 @@ install this package.
 %install
 rm -rf $RPM_BUILD_ROOT
 %{__make} install \
-    DESTDIR="$RPM_BUILD_ROOT" \
     INSTALL_OPTS="" \
     COMMAND_OPTS="" \
-    INIT_OPTS=""
+    INIT_OPTS="" \
+    DESTDIR=$RPM_BUILD_ROOT
 
 install -d $RPM_BUILD_ROOT%{_localstatedir}/lib/%{name}
 
@@ -86,9 +89,6 @@ rm $RPM_BUILD_ROOT%{_datadir}/%{name}/documentation/installdox
 install -d $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
 install -p sample-config/naemon.sysconfig $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/%{name}
 
-install -d $RPM_BUILD_ROOT%{_libdir}/%{name}
-ln -s %{_libdir}/nagios/plugins $RPM_BUILD_ROOT%{_libdir}/%{name}/plugins
-
 # Install systemd entry
 install -D -p daemon-systemd $RPM_BUILD_ROOT%{systemdunitdir}/%{name}.service
 install -D -p naemon.tmpfiles.conf $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.conf
@@ -102,6 +102,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc README.md
 %attr(754,root,root) /etc/rc.d/init.d/naemon
+%attr(755,root,root) %{_libdir}/%{name}/libnaemon.so.*.*.*
+%ghost %{_libdir}/%{name}/libnaemon.so.0
 %attr(755,root,root) %{_bindir}/naemon
 %attr(755,root,root) %{_bindir}/naemonstats
 %attr(755,root,root) %{_bindir}/oconfsplit
@@ -113,25 +115,25 @@ rm -rf $RPM_BUILD_ROOT
 %{systemdunitdir}/%{name}.service
 %{systemdtmpfilesdir}/%{name}.conf
 %config(noreplace) /etc/logrotate.d/naemon
-%dir %{_sysconfdir}/naemon/
+%dir %{_sysconfdir}/naemon
 %attr(2775,naemon,naemon) %dir %{_sysconfdir}/naemon/conf.d
 %config(noreplace) %{_sysconfdir}/naemon/naemon.cfg
 %config(noreplace) %{_sysconfdir}/naemon/resource.cfg
 %attr(664,naemon,naemon) %config(noreplace) %{_sysconfdir}/naemon/conf.d/*.cfg
 %dir %{_sysconfdir}/naemon/conf.d/templates
 %attr(664,naemon,naemon) %config(noreplace) %{_sysconfdir}/naemon/conf.d/templates/*.cfg
+
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/%{name}
+
 %attr(2775,naemon,http) %dir %{_localstatedir}/cache/%{name}/checkresults
 %attr(2775,naemon,naemon) %dir %{_localstatedir}/cache/%{name}
 %attr(755,naemon,naemon) %dir %{_localstatedir}/lib/%{name}
 %attr(755,naemon,naemon) %dir %{_localstatedir}/log/%{name}
 %attr(755,naemon,naemon) %dir %{_localstatedir}/log/%{name}/archives
+
 %if %{with doc}
 %attr(-,root,root) %{_datadir}/%{name}/documentation
 %endif
-%attr(755,root,root) %{_libdir}/%{name}/libnaemon.so.*.*.*
-%ghost %{_libdir}/%{name}/libnaemon.so.0
-%attr(-,root,root) %{_libdir}/%{name}/plugins
 
 %files devel
 %defattr(644,root,root,755)
