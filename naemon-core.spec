@@ -6,7 +6,7 @@
 Summary:	Open Source Host, Service And Network Monitoring Program
 Name:		naemon-core
 Version:	1.0.3
-Release:	0.2
+Release:	0.5
 License:	GPL v2
 Group:		Applications/System
 Source0:	http://labs.consol.de/naemon/release/v%{version}/src/%{name}-%{version}.tar.gz
@@ -17,10 +17,20 @@ BuildRequires:	gperf
 BuildRequires:	help2man
 BuildRequires:	perl-ExtUtils-MakeMaker
 BuildRequires:	pkgconfig
+BuildRequires:	rpmbuild(macros) >= 1.202
 BuildRequires:	zlib-devel
+Provides:	group(naemon)
+Provides:	user(naemon)
+Requires(postun):	/usr/sbin/groupdel
+Requires(postun):	/usr/sbin/userdel
+Requires(pre):	/bin/id
+Requires(pre):	/usr/bin/getgid
+Requires(pre):	/usr/sbin/groupadd
+Requires(pre):	/usr/sbin/useradd
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		plugindir		%{_prefix}/lib/nagios/plugins
+%define		naemonhome		/var/lib/naemon
 
 %description
 Naemon is an application, system and network monitoring application.
@@ -80,16 +90,24 @@ install -d $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
 install -p sample-config/naemon.sysconfig $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/naemon
 
 # Install systemd entry
-install -D -p daemon-systemd $RPM_BUILD_ROOT%{systemdunitdir}/%{name}.service
-install -D -p naemon.tmpfiles.conf $RPM_BUILD_ROOT%{systemdtmpfilesdir}/%{name}.conf
-# Move SystemV init-script
-#mv -f $RPM_BUILD_ROOT%{_initrddir}/%{name} $RPM_BUILD_ROOT%{_bindir}/%{name}-ctl
+install -D -p daemon-systemd $RPM_BUILD_ROOT%{systemdunitdir}/naemon.service
+install -D -p naemon.tmpfiles.conf $RPM_BUILD_ROOT%{systemdtmpfilesdir}/naemon.conf
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %post	-p /sbin/ldconfig
-%postun	-p /sbin/ldconfig
+
+%pre
+%groupadd -g 321 naemon
+%useradd -u 321 -d %{naemonhome} -s /bin/false -c "Naemon Daemon" -g naemon -G naemon naemon
+
+%postun
+/sbin/ldconfig
+if [ "$1" = "0" ]; then
+	%userremove naemon
+	%groupremove naemon
+fi
 
 %files
 %defattr(644,root,root,755)
@@ -106,8 +124,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man8/naemonstats.8*
 %{_mandir}/man8/oconfsplit.8*
 %{_mandir}/man8/shadownaemon.8*
-%{systemdunitdir}/%{name}.service
-%{systemdtmpfilesdir}/%{name}.conf
+%{systemdunitdir}/naemon.service
+%{systemdtmpfilesdir}/naemon.conf
 %config(noreplace) /etc/logrotate.d/naemon
 %dir %{_sysconfdir}/naemon
 %dir %{_sysconfdir}/naemon/conf.d
