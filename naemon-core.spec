@@ -6,7 +6,7 @@
 Summary:	Open Source Host, Service And Network Monitoring Program
 Name:		naemon-core
 Version:	1.0.3
-Release:	0.5
+Release:	0.7
 License:	GPL v2
 Group:		Applications/System
 Source0:	http://labs.consol.de/naemon/release/v%{version}/src/%{name}-%{version}.tar.gz
@@ -59,6 +59,7 @@ using Naemons own APIs, you should install this package.
 	--with-initdir=%{_initrddir} \
 	--with-pluginsdir=%{plugindir} \
 	--localstatedir=%{_localstatedir}/lib/naemon \
+	--with-lockfile=%{_localstatedir}/run/naemon/naemon.pid \
 	--with-checkresultdir=%{_localstatedir}/spool/naemon/checkresults \
 	%{__with_without tests} \
 	--enable-event-broker \
