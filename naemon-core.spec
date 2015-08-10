@@ -11,6 +11,7 @@ License:	GPL v2
 Group:		Applications/System
 Source0:	http://labs.consol.de/naemon/release/v%{version}/src/%{name}-%{version}.tar.gz
 # Source0-md5:	5eb9c6e9be29b993e8488d58f8b3de23
+Source1:	naemon.logrotate
 URL:		http://www.naemon.org/
 BuildRequires:	chrpath
 BuildRequires:	gperf
@@ -87,7 +88,9 @@ rm $RPM_BUILD_ROOT%{_datadir}/%{name}/documentation/installdox
 
 # Put the new RC sysconfig in place
 install -d $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
-install -p sample-config/naemon.sysconfig $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/naemon
+cp -p sample-config/naemon.sysconfig $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/naemon
+
+cp -p %{SOURCE1} $RPM_BUILD_ROOT/etc/logrotate.d/naemon
 
 # Install systemd entry
 install -D -p daemon-systemd $RPM_BUILD_ROOT%{systemdunitdir}/naemon.service
@@ -126,7 +129,7 @@ fi
 %{_mandir}/man8/shadownaemon.8*
 %{systemdunitdir}/naemon.service
 %{systemdtmpfilesdir}/naemon.conf
-%config(noreplace) /etc/logrotate.d/naemon
+%config(noreplace) %verify(not md5 mtime size) /etc/logrotate.d/naemon
 %dir %{_sysconfdir}/naemon
 %dir %{_sysconfdir}/naemon/conf.d
 %dir %{_sysconfdir}/naemon/conf.d/templates

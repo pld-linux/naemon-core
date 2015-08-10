@@ -1,0 +1,15 @@
+/var/log/naemon/naemon.log
+{
+	daily
+	rotate 3650
+	nocompress
+	olddir archives
+	dateext
+	dateformat -%Y%m%d
+	missingok
+	notifempty
+	postrotate
+	  [ -f /var/run/naemon/naemon.pid ] && kill -s USR1 `cat /var/run/naemon/naemon.pid`
+	endscript
+	create 0664 naemon naemon
+}
